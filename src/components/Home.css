@@ -1,0 +1,28 @@
+.nav-pills li a:hover{
+    background-color: rgba(14, 177, 201, 1);
+}
+#parentM li a:hover{
+    background-color: rgba(14, 177, 201, 1);
+}
+.dropdown-menu a:hover{
+    background-color: rgba(14, 177, 201, 1);
+}
+.ms-6 {
+    margin-left: 6rem; 
+}
+.container-fluid {
+    background-color:#d0e7eb;
+    font-size: 20px;
+}
+.collapse {
+    transition: height 0s ease ;
+}
+.ms-7 {
+    margin-left: 6.8rem; 
+}
+.ms-8 {
+    margin-left: 8.5rem; 
+}
+.ms-9 {
+    margin-left: 7.2rem; 
+}
