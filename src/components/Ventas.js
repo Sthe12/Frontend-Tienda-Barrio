@@ -5,6 +5,16 @@ import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import { ShoppingCart, Search, PlusCircle, XCircle, DollarSign, Package, Tag, Box, Archive, User, CreditCard, Phone, MapPin } from 'react-feather';
 
+const categorias = [
+    "Bebidas",
+    "Aseo",
+    "Limpieza",
+    "Snacks",
+    "Embutidos",
+    "Grasas",
+    "Otros"
+];
+
 function Ventas() {
     const [codigoBarra, setCodigoBarra] = useState("");
     const [productoBuscado, setProductoBuscado] = useState(null);
@@ -29,7 +39,15 @@ function Ventas() {
     const [telefonoError, setTelefonoError] = useState("");
     const [productosVenta, setProductosVenta] = useState([]);
     const [totalVenta, setTotalVenta] = useState(0);
-   
+    const [showProductForm, setShowProductForm] = useState(false);
+    const [newProduct, setNewProduct] = useState({
+        codigoBarra: "",
+        nombre: "",
+        precio: "",
+        stock: "",
+        categoria: "",
+        categoriaPersonalizada: ""
+    });
     // Función para redondear a dos decimales
     const roundToTwo = (num) => {
         return +(Math.round(num + "e+2")  + "e-2");
@@ -52,8 +70,7 @@ function Ventas() {
     // Función para buscar el producto por código de barras
     const buscarProducto = async () => {
         if (!codigoBarra) {
-            setError();
-            Swal.fire('Error', 'Por favor, ingrese un código de barra.', 'error');
+            setError("Por favor, ingrese un código de barra.");
             return;
         }
 
@@ -70,17 +87,96 @@ function Ventas() {
                 setProductoBuscado(response.data.product);
                 setVerModal(true);
             } else {
-                setError("Producto no encontrado");
+                throw new Error("Producto no encontrado");
             }
         } catch (error) {
             console.error('Error al buscar el producto:', error);
-            setError();
-            Swal.fire('Error', 'Error al buscar el producto. Por favor, intente de nuevo.', 'error');
+            if (error.response && error.response.status === 404) {
+                Swal.fire({
+                    title: 'Producto no registrado',
+                    text: '¿Desea registrar el producto?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, registrar',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setNewProduct({ ...newProduct, codigoBarra: codigoBarra });
+                        setShowProductForm(true);
+                    }
+                });
+            } else {
+                setError("Error al buscar el producto. Por favor, intente de nuevo.");
+            }
         } finally {
             setPendiente(false);
         }
     };
+    
+    // Función para manejar cambios en el formulario de nuevo producto
+    const handleNewProductChange = (e) => {
+        const { name, value } = e.target;
+        setNewProduct(prev => ({
+            ...prev,
+            [name]: value,
+            ...(name === 'categoria' && value !== 'Otros' ? { categoriaPersonalizada: '' } : {})
+        }));
+    };
+    
+     // Función para registrar un nuevo producto
+     const registerNewProduct = async () => {
+        // Validación de campos
+        if (!newProduct.nombre || !newProduct.precio || !newProduct.stock || !newProduct.categoria) {
+            Swal.fire('Error', 'Por favor, complete todos los campos obligatorios.', 'error');
+            return;
+        }
 
+        if (newProduct.categoria === 'Otros' && !newProduct.categoriaPersonalizada) {
+            Swal.fire('Error', 'Por favor, ingrese una categoría personalizada.', 'error');
+            return;
+        }
+
+        const productoAGuardar = {
+            ...newProduct,
+            categoria: newProduct.categoria === 'Otros' ? newProduct.categoriaPersonalizada : newProduct.categoria
+        };
+
+        try {
+            const response = await axios.post('http://localhost:3600/create-product', productoAGuardar, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.status === 200 && response.data.product) {
+                Swal.fire('Éxito', 'Producto registrado correctamente', 'success');
+                setProductoBuscado(response.data.product);
+                setShowProductForm(false);
+                setVerModal(true);
+                
+                // Limpiar el formulario
+                setNewProduct({
+                    codigoBarra: "",
+                    nombre: "",
+                    precio: "",
+                    stock: "",
+                    categoria: "",
+                    categoriaPersonalizada: ""
+                });
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
+        } catch (error) {
+            console.error('Error al registrar el producto:', error);
+            let errorMessage = 'No se pudo registrar el producto. Por favor, intente de nuevo.';
+            
+            if (error.response) {
+                errorMessage = error.response.data.message || errorMessage;
+            } else if (error.request) {
+                errorMessage = 'No se pudo conectar con el servidor. Verifique su conexión.';
+            }
+            
+            Swal.fire('Error', errorMessage, 'error');
+        }
+    };
     // Función para agregar el producto a la lista de venta
     const agregarProducto = () => {
         if (!productoBuscado || cantidad <= 0) {
@@ -503,6 +599,90 @@ if (name === 'ci') {
                     </Button>
                 </ModalFooter>
             </Modal>
+            
+            {/* Modal para registrar nuevo producto */}
+        <Modal isOpen={showProductForm} toggle={() => setShowProductForm(false)}>
+            <ModalHeader toggle={() => setShowProductForm(false)}>
+                <Package className="mr-2" /> Registrar Nuevo Producto
+            </ModalHeader>
+            <ModalBody>
+                <FormGroup>
+                    <Label for="codigoBarra"><Package className="mr-2" /> Código de Barras</Label>
+                    <Input 
+                        type="text" 
+                        name="codigoBarra" 
+                        id="codigoBarra" 
+                        value={newProduct.codigoBarra} 
+                        onChange={handleNewProductChange} 
+                        readOnly
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label for="nombre"><Tag className="mr-2" /> Nombre del Producto</Label>
+                    <Input 
+                        type="text" 
+                        name="nombre" 
+                        id="nombre" 
+                        value={newProduct.nombre} 
+                        onChange={handleNewProductChange}
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label for="categoria"><Box className="mr-2" /> Categoría</Label>
+                    <Input 
+                        type="select" 
+                        name="categoria" 
+                        id="categoria" 
+                        value={newProduct.categoria} 
+                        onChange={handleNewProductChange}
+                    >
+                        <option value="">Seleccione una categoría</option>
+                        {categorias.map((cat, index) => (
+                            <option key={index} value={cat}>{cat}</option>
+                        ))}
+                    </Input>
+                </FormGroup>
+                {newProduct.categoria === 'Otros' && (
+                    <FormGroup>
+                        <Label for="categoriaPersonalizada"><Box className="mr-2" /> Categoría Personalizada</Label>
+                        <Input 
+                            type="text" 
+                            name="categoriaPersonalizada" 
+                            id="categoriaPersonalizada" 
+                            value={newProduct.categoriaPersonalizada} 
+                            onChange={handleNewProductChange}
+                            placeholder="Ingrese la categoría personalizada"
+                        />
+                    </FormGroup>
+                )}
+                <FormGroup>
+                    <Label for="precio"><DollarSign className="mr-2" /> Precio</Label>
+                    <Input 
+                        type="number" 
+                        name="precio" 
+                        id="precio" 
+                        value={newProduct.precio} 
+                        onChange={handleNewProductChange}
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label for="stock"><Box className="mr-2" /> Stock</Label>
+                    <Input 
+                        type="number" 
+                        name="stock" 
+                        id="stock" 
+                        value={newProduct.stock} 
+                        onChange={handleNewProductChange}
+                    />
+                </FormGroup>
+            </ModalBody>
+            <ModalFooter>
+                <Button color="secondary" onClick={() => setShowProductForm(false)}>Cancelar</Button>
+                <Button color="primary" onClick={registerNewProduct}>
+                    <PlusCircle size={16} className="mr-2" /> Registrar Producto
+                </Button>
+            </ModalFooter>
+        </Modal>
 
             {/* Modal para ingresar datos del cliente */}
             <Modal isOpen={verClienteModal} toggle={() => setVerClienteModal(false)} size="xl">

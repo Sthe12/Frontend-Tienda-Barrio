@@ -357,7 +357,7 @@ function Productos() {
                         <Input type="text" id="codigoBarra" name="codigoBarra" value={producto.codigoBarra} onChange={handleChange} disabled={modoEdicion} />
                     </FormGroup>
                     <FormGroup>
-                        <Label for="nombre"><Tag className="mr-2" /> Nombre</Label>
+                        <Label for="nombre"><Tag className="mr-2" /> Nombre del Producto</Label>
                         <Input type="text" id="nombre" name="nombre" value={producto.nombre} onChange={handleChange} />
                     </FormGroup>
                     <FormGroup>
