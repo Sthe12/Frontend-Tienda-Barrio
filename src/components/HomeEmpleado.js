@@ -6,6 +6,7 @@ import Ventas from './Ventas';
 import HistorialVentas from './HistorialVentas';
 import Canastos from './Canastos';
 import axios from 'axios';
+import Dashboard from './Dashboard'
 
 function HomeEmpleado() {
     const navigate = useNavigate();
@@ -74,10 +75,13 @@ function HomeEmpleado() {
                         <hr className='text-secondary d-none d-sm-block mt-5'></hr>
                         <ul className="nav nav-pills flex-column mt-3 mt-sm-0" id='parentM'>
                             <li className="nav-item text-white fs-4 my-1 py-2 py-sm-0">
-                                <a className="nav-link text-white fs-5 text-center text-sm-start" aria-current='page'>
+                                <Link className="nav-link text-white fs-5 "
+                                 to="/empleado-home/dashboard"
+                                 onClick={() => handleSelectComponent('Dashboard')}
+                                >
                                     <i className='bi bi-speedometer2'></i>
                                     <span className='ms-3 d-none d-sm-inline'>Dashboard</span>
-                                </a>
+                                </Link>
                             </li>
                             {/*<hr className='text-secondary d-none d-sm-block'></hr>
                             <li className="nav-item text-white fs-4 my-1 py-2 py-sm-0">
@@ -265,6 +269,7 @@ function HomeEmpleado() {
                 {selectedComponent === 'Ventas' && <Ventas/>}
                 {selectedComponent === 'HistorialVentas' && <HistorialVentas/>}
                 {selectedComponent === 'Canastos' && <Canastos/>}
+                {selectedComponent === 'Dashboard' && <Dashboard/>}
                 
                 {/* Renderiza otros componentes según sea necesario */}
             </div>

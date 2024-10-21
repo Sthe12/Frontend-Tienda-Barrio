@@ -14,6 +14,7 @@ import HomeSuperAdmin from './components/HomeSuperAdmin';
 import Ventas from './components/Ventas';
 import HistorialVentas from './components/HistorialVentas';
 import Canastos from './components/Canastos';
+import Dashboard from './components/Dashboard';
 
 
 // Componente para proteger rutas que requieren autenticación
@@ -44,6 +45,7 @@ function App() {
           <Route path="ventas" element={<Ventas />} />
           <Route path="historial-ventas" element={<HistorialVentas />} />
           <Route path="canastos" element={<Canastos />} />
+          <Route path="dashboard" element={<Dashboard />} />
         </Route>
         <Route 
           path="/empleado-home" 
@@ -59,6 +61,7 @@ function App() {
         <Route path="ventas" element={<Ventas />} />
         <Route path="historial-ventas" element={<HistorialVentas />} />
         <Route path="canastos" element={<Canastos />} />
+        <Route path="dashboard" element={<Dashboard />} />
         </Route>
         {/* Ruta protegida para Home, que contiene rutas anidadas */}
         <Route 
